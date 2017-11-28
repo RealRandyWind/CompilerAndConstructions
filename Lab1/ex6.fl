@@ -1,0 +1,197 @@
+%{
+    #include <math.h>
+    #include <stdlib.h>
+
+    #define DEFAULT_SIZE 16
+
+    /* global stack variable */
+    double* numbers = malloc(DEFAULT_SIZE);
+    int numbers_index = -1;
+    int numbers_reserved = DEFAULT_SIZE;
+
+    /* global stack functions */
+    void push(number double);
+    double pop();
+
+    /* helper functions */
+    double toValue(char* number);
+    double toValueHelper(char* number, double base, bool is_fraction, char alt_stop, int* last_index);
+    int toValueHelper2(char* number, int base, char alt_stop, int* last_index);
+
+    /* rpn functions */
+    void notifyNumber(char* number);
+    void notifyOperater(char symbol);
+    void notifyExpression();
+    void notifyInvalidExpression();
+%}
+
+R                   [\n\r]
+W                   [ \t\v]
+D                   [0-9]
+N                   (-?{D}+(\.{D}+)?(E(\+|-){D}+)?)
+O                   (\+|-|\/|\*|\^)
+
+%%
+
+{N}                                 { notifyNumber(yytext); }
+{O}                                 { notifyOperater(*yytext); }
+{W}*                                { /* doing nothing */ }
+{R}                                 { notifyExpression(); }
+.                                   { printf("Invalid character: %s\n",yytext); }
+
+%%
+
+/* push and pop/top functions */
+
+void push(number double)
+{
+    ++numbers_index;
+    if(numbers_index >= numbers_reserved)
+    {
+        numbers_reserved *= 2;
+        numbers = realloc(numbers_reserved);
+        if(!numbers) { exit(EXIT_FAILURE); }
+    }
+    numbers[numbers_index] = number;
+}
+
+double pop()
+{
+    if(numbers_index < 0 ) { exit(EXIT_FAILURE); }
+    double number = numbers[numbers_index];
+    return number;
+}
+
+/* number to value converter and helper functions */
+
+double toValueHelper(char* number, double base, bool is_fraction, char alt_stop, int* last_index)
+{
+    double value = 0.0;
+    double factor = 1.0;
+    int index = (*last_index);
+    char symbol = '\0';
+
+    while(symbol = number[index])
+    {
+        if(symbol == alt_stop) { ++index; break; }
+
+        if(is_fraction)
+        {
+            factor /= base;
+            value += (double)(symbol - '0') * factor;
+        }
+        else
+        {
+            value *= base;
+            value += (double)(symbol - '0');
+        }
+        
+        ++index;
+    }
+
+    (*last_index) = index;
+    return value;
+}
+
+int toValueHelper2(char* number, int base, char alt_stop, int* last_index)
+{
+    int value = 0.0;
+    int index = (*last_index);
+    char symbol = '\0';
+
+    while(symbol = number[index])
+    {
+        if(symbol == alt_stop) { ++index; break; }
+
+        value *= base;
+        value += (symbol - '0');
+        
+        ++index;
+    }
+
+    (*last_index) = index;
+    return value;
+}
+
+double toValue(char* number)
+{
+    double value = 0.0;
+    double sign = 1.0;
+    double dominator = 0.0;
+    double nominator = 0.0;
+    
+    int factor = 1;
+    double scale = 1.0;
+    
+    int index = 0;
+
+    if(number[index] == '-') { sign = -1; ++index; }
+
+    /* extract dominator */
+    dominator = toValueHelper(number, 10.0, false, '.', &index);
+
+    /* extract nominator */
+    nominator = toValueHelper(number, 10.0, true, 'E', &index);
+
+    /* extract factor */
+    if(number[index]) {
+        scale = (number[index++] == '-' ? 1.0/10.0 : 10.0);
+        factor = toValueHelper2(number, 10.0, '\0', &index);
+    }
+
+    /* apply factor */
+    value = sign * (dominator + nominator);
+    while(factor--)
+    {
+        value *= scale;
+    }
+
+    return  value;
+}
+
+/* rpn calulator function */
+
+void notifyInvalidExpression()
+{
+    index = -1;
+    printf("Invalid expression\n");
+}
+
+void notifyNumber(char* number)
+{
+    push(toValue(number));
+}
+
+void notifyOperater(char symbol)
+{
+    if (numbers_index < 0) { return; }
+    double b = pop();
+    if (numbers_index < 0) { return; }
+    double a = pop();
+
+    switch (symbol)
+    {
+        case '-': push(a - b); return;
+        case '+': push(a + b); return;
+        case '/': push(a / b); return;
+        case '*': push(a * b); return;
+        case '^': push(pow(a,b)); return;
+        default: ;
+    }
+}
+
+void notifyExpression()
+{
+    if (numbers_index < 0) { notifyInvalidExpression(); return; }
+    double c = pop();
+    
+    if(numbers_index < 0) { printf("%f\n", c); return; }
+    
+    notifyInvalidExpression();
+}
+
+int main(int argc, char *argv[]) {
+    yylex();
+    if(numbers) { free(numbers); }
+    return 0;
+}

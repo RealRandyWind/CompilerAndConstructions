@@ -1,6 +1,9 @@
+%{
+%}
+
 %%
-                                                    /* use the ascii table as to our advantage */
-[A-ya-y0-8]             putchar(((*yytext) + 1));   /* exclude upper bound to avoid mod */
+                                                    /* use the ascii table to our advantage */
+[A-Ya-y0-8]             putchar(((*yytext) + 1));   /* exclude upper bound to avoid mod */
 [Zz]                    putchar(((*yytext) - 25));  /* make alphas circular */
 [9]                     putchar('0');               /* make digits circular */
 .                       putchar((*yytext));         /* forward anything else */

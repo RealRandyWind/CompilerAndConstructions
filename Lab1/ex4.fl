@@ -1,0 +1,20 @@
+%{
+%}
+
+H       (a|ba)*c
+S       [ \t\v\n\r]
+
+%%
+
+(a|bb)*ba(a|b)*         printf("DFA1 accepted: %s\n",yytext);
+(a|ab)*(bb)*(b|ba)      printf("DFA2 accepted: %s\n",yytext);
+a{H}(db|daa{H})*        printf("DFA3 accepted: %s\n",yytext);
+{S}*                    { /* doing nothing */ }
+.                       { /* doing nothing */ }
+
+%%
+
+int main(int argc, char *argv[]) {
+    yylex();
+    return 0;
+}

@@ -1,0 +1,53 @@
+%{
+    /* convert roman symbol to value */
+    int toValue(char symbol);
+    /* convert roman sequence to number */
+    int toNumber(char* roman, int size);
+%}
+
+%%
+
+[IVXLCDM]+              printf("%s=%d",yytext,toNumber(yytext,yyleng)); /* accept roman symbols */
+[ \t\v\n\r]*            printf("\n");                                   /* move to new line on white space */
+.                       printf("invalid character (%s)\n",yytext);      /* reject remaining cases */
+
+%%
+
+int toValue(char symbol)
+{
+    switch (symbol)
+    {
+        /* romans */
+        case 'I': return 1;
+        case 'V': return 5;
+        case 'X': return 10;
+        case 'L': return 50;
+        case 'C': return 100;
+        case 'D': return 500;
+        case 'M': return 1000;
+        /* nothing */
+        default: ;
+    }
+    return 0;
+}
+
+int toNumber(char* roman, int size)
+{
+    int value = 0;
+    int prev_value;
+    int number = 0;
+
+    while(size--)
+    {
+        prev_value = toValue(roman[size]);
+        number += (prev_value < value ? -prev_value : prev_value);
+        value = prev_value;
+    }
+
+    return number;
+}
+
+int main(int argc, char *argv[]) {
+    yylex();
+    return 0;
+}
