@@ -5,7 +5,7 @@
     #define DEFAULT_SIZE 16
 
     /* global stack variable */
-    double* numbers = (double*)malloc(DEFAULT_SIZE);
+    double* numbers = (double*)malloc(sizeof(double) * DEFAULT_SIZE);
     int numbers_index = -1;
     int numbers_reserved = DEFAULT_SIZE;
 
@@ -49,7 +49,7 @@ void push(double number)
     if(numbers_index >= numbers_reserved)
     {
         numbers_reserved *= 2;
-        numbers = (double*)realloc(numbers, numbers_reserved);
+        numbers = (double*)realloc(numbers, sizeof(double) * numbers_reserved);
         if(!numbers) { exit(EXIT_FAILURE); }
     }
     numbers[numbers_index] = number;

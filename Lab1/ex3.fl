@@ -8,7 +8,7 @@
 %%
 
 [IVXLCDM]+              printf("%s=%d",yytext,toNumber(yytext,yyleng)); /* accept roman symbols */
-[ \t\v]*            printf("\n");                                   /* move to new line on white space */
+[ \t\v]*                printf("\n");                                   /* move to new line on white space */
 .                       printf("invalid character (%s)\n",yytext);      /* reject remaining cases */
 
 %%
