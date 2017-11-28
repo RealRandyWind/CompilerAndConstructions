@@ -5,12 +5,12 @@
     #define DEFAULT_SIZE 16
 
     /* global stack variable */
-    double* numbers = malloc(DEFAULT_SIZE);
+    double* numbers = (double*)malloc(DEFAULT_SIZE);
     int numbers_index = -1;
     int numbers_reserved = DEFAULT_SIZE;
 
     /* global stack functions */
-    void push(number double);
+    void push(double number);
     double pop();
 
     /* helper functions */
@@ -43,13 +43,13 @@ O                   (\+|-|\/|\*|\^)
 
 /* push and pop/top functions */
 
-void push(number double)
+void push(double number)
 {
     ++numbers_index;
     if(numbers_index >= numbers_reserved)
     {
         numbers_reserved *= 2;
-        numbers = realloc(numbers_reserved);
+        numbers = (double*)realloc(numbers, numbers_reserved);
         if(!numbers) { exit(EXIT_FAILURE); }
     }
     numbers[numbers_index] = number;
@@ -58,7 +58,7 @@ void push(number double)
 double pop()
 {
     if(numbers_index < 0 ) { exit(EXIT_FAILURE); }
-    double number = numbers[numbers_index];
+    double number = numbers[numbers_index--];
     return number;
 }
 
@@ -153,7 +153,7 @@ double toValue(char* number)
 
 void notifyInvalidExpression()
 {
-    index = -1;
+    numbers_index = -1;
     printf("Invalid expression\n");
 }
 
