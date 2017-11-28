@@ -1,4 +1,4 @@
-NAME ?= expressions
+NAME ?= ex5
 PRE_OUT := lex.yy
 TEST_IN := 
 CXX ?= g++

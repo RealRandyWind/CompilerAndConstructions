@@ -3,7 +3,7 @@
 
 S               [ \t\v\n\r]
 X               (ab|ba)
-Y               (aabb|bbaa)
+Y               (aabb|bbaa|bbbaa|aabbb)
 Z1              b+({X}|{Y})b*({X}|{Y})b*
 Z2              b*({X}|{Y})b+({X}|{Y})b*
 Z3              b*({X}|{Y})b*({X}|{Y})b+
