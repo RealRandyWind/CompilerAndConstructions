@@ -1,0 +1,92 @@
+%{
+    #define YY_USER_ACTION update_cursor();
+
+    #include "minipascal.h"
+    #include "y.tab.h"
+
+    extern void lexer_error();
+
+    string_t lexeme(string_t into, int* ptrleng);
+%}
+
+alpha               [a-zA-Z_]
+digit               [0-9]
+line                ([\n\r]|\n\r|\r\n)
+blank               [ \t\v\f]
+word                ({alpha}|{digit})
+
+indentifier         {alpha}{word}*
+natural             {digit}+
+posreal             {digit}+(\.{digit}+)?
+integer             {natural}
+real                {posreal}
+exponent            [eE][+-]{natural}
+scientific          {real}{exponent}
+
+comment             \{[^}]*\}
+
+%%
+
+(?i:"program")      { return TPROGRAM;              }
+(?i:"procedure")    { return TPROCEDURE;            }
+(?i:"function")     { return TFUNCTION;             }
+(?i:"var")          { return TVAR;                  }
+(?i:"integer")      { return TINTEGER;              }
+(?i:"real")         { return TREAL;                 }
+(?i:"array")        { return TARRAY;                }
+(?i:"begin")        { return TBEGIN;                }
+(?i:"end")          { return TEND;                  }
+(?i:"of")           { return TOF;                   }
+(?i:"if")           { return TIF;                   }
+(?i:"then")         { return TTHEN;                 }
+(?i:"else")         { return TELSE;                 }
+(?i:"while")        { return TWHILE;                }
+(?i:"do")           { return TDO;                   }
+(?i:"not")          { return TNOT;                  }
+"("                 { return TPARENTHESISOPEN;      }
+")"                 { return TPARENTHESISCLOSE;     }
+"["                 { return TBRACKETOPEN;          }
+"]"                 { return TBRACKETCLOSE;         }
+";"                 { return TSEMICOLON;            }
+":"                 { return TCOLON;                }
+","                 { return TCOMMA;                }
+"."                 { return TDOT;                  }
+".."                { return TDDOT;                 }
+"="                 { return TREL;                  }
+":="                { return TSET;                  }
+"<"                 { return TREL;                  }
+">"                 { return TREL;                  }
+"<="                { return TREL;                  }
+">="                { return TREL;                  }
+"<>"                { return TREL;                  }
+"+"                 { return TADD;                  }
+"-"                 { return TADD;                  }
+"*"                 { return TMUL;                  }
+"/"                 { return TMUL;                  }
+(?i:"div")          { return TMUL;                  }
+(?i:"mod")          { return TMUL;                  }
+{integer}           { return TNUMBER;               }
+{real}              { return TNUMBER;               }
+{indentifier}       { return TIDENTIFIER;           }
+{comment}           { /* do nothing */              }
+{line}              { /* do nothing */              }
+{blank}+            { /* do nothing */              }
+.                   { lexer_error();                }
+<<EOF>>             { return TEOF;                  }
+
+%%
+
+string_t lexeme(string_t into, int* ptrleng)
+{
+    size_t k;
+
+    if(ptrleng) { (*ptrleng) = yyleng; }
+    if(!into) { into = raw_string(yyleng); }
+    for(k = 0; (into[k] = yytext[k]); ++k) { /* do nothing */ }
+    into[k] = nullchr;
+    return into;
+}
+
+int yywrap(void) {
+    return 1;
+}

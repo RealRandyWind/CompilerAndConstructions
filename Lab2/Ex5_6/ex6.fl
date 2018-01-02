@@ -1,0 +1,64 @@
+%{
+    #include "ex6.h"
+    #include "stdlib.h"
+
+    void lexerError();
+    int lex(size_t* ptrleng);
+    const char* text(char* into);
+%}
+
+R                   [\n\r]
+W                   [ \t\v]
+D                   [0-9]
+N                   (-?{D}+(\.{D}+)?(E(\+|-){D}+)?)
+
+%%
+
+{N}                 { return TNUMBER; }
+"+"                 { return TADD; }
+"-"                 { return TSUB; }
+"/"                 { return TDIV; }
+"*"                 { return TMUL; }
+"^"                 { return TPOW; }
+"("                 { return TLPAR; }
+")"                 { return TRPAR; }
+{W}|{R}             { /* do nothing */ }
+.                   { lexerError(); }
+
+<<EOF>>             { return TEOF; }
+
+%%
+
+void lexerError()
+{
+   exit(EXIT_FAILURE);
+}
+
+int lex(size_t* ptrleng)
+{ 
+    int token;
+
+    token = yylex();
+    if(ptrleng) { (*ptrleng) = yyleng; }
+    return token;
+}
+
+const char* text(char* into)
+{
+    size_t k;
+
+    if(!into) { return yytext; }
+    for(k = 0; (into[k] = yytext[k]); ++k) { /* do nothing */ }
+    return into;
+}
+
+int main()
+{
+    FNode *node;
+
+    parse(&node);
+    printNode(node);
+    freeNode(node);
+    yylex_destroy();
+    return EXIT_SUCCESS;
+}

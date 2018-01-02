@@ -1,0 +1,17 @@
+PROGRAM euclid (input, output);
+{ MiniPAS implementation of Euclid’s algorithm for computing GCDs }
+VAR x, y : integer;
+function gcd(a, b : integer) : integer;
+begin
+while a <> b do
+begin
+while a > b do a := a - b;
+while b > a do b := b - a
+end;
+gcd := a;
+end;
+{ main program starts here }
+BEGIN
+readln(x, y);
+writeln(gcd(x,y))
+END.

@@ -3,7 +3,7 @@
 
 S               [ \t\v\n\r]
 X               (ab|ba)
-Y               (aabb|bbaa)
+Y               (aabbb|bbbaa)
 Z               ({X}b+{X})|({X}b*{X}b)|(b{X}b*{X})
 
 %%

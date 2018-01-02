@@ -1,0 +1,155 @@
+%{
+	#include "minipascal.h"
+	
+	extern int yyparse();
+	extern int yylex();
+
+	void yyerror(const char* msg);
+%}
+
+%union {
+	datatype_t datatype;
+	identifier_t identifier;
+};
+
+%token TPROGRAM TFUNCTION TVAR TPROCEDURE
+%token TSEMICOLON TCOLON TDOT TDDOT TCOMMA
+%token TOF TIF TTHEN TELSE TWHILE TDO TBEGIN TEND
+%token TBRACKETOPEN TBRACKETCLOSE TPARENTHESISOPEN TPARENTHESISCLOSE
+
+%token TINTEGER TREAL TARRAY
+%token TREL TMUL TADD TSET TNOT
+%token TIDENTIFIER TNUMBER
+
+%%
+
+program:		
+	TPROGRAM TIDENTIFIER 
+	TPARENTHESISOPEN 
+	indentifier_list
+	TPARENTHESISCLOSE
+	TSEMICOLON
+	declarations
+	subprogram_declarations
+	compound_statement
+	TDOT
+	;
+
+indentifier_list:
+	TIDENTIFIER
+	| indentifier_list TCOMMA TIDENTIFIER
+	;
+
+declarations:
+	declarations TVAR indentifier_list TCOLON type TSEMICOLON
+	|
+	;
+
+type:
+	standard_type
+	| TARRAY TBRACKETOPEN TNUMBER TDDOT TNUMBER TBRACKETCLOSE TOF standard_type
+	;
+
+standard_type:
+	TINTEGER
+	| TREAL
+	;
+
+subprogram_declarations:
+	subprogram_declarations subprogram_declaration TSEMICOLON
+	|
+	;
+
+subprogram_declaration:
+	subprogram_head declarations compound_statement
+	;
+
+subprogram_head:
+	TFUNCTION TIDENTIFIER arguments TCOLON standard_type TSEMICOLON
+	| TPROCEDURE TIDENTIFIER arguments TSEMICOLON
+	;
+
+arguments:
+	TPARENTHESISOPEN parameter_list TPARENTHESISCLOSE
+	|
+	;
+
+parameter_list:
+	indentifier_list TCOLON type
+	| parameter_list TSEMICOLON indentifier_list TCOLON type
+	;
+
+compound_statement:
+	TBEGIN
+	optional_statements
+	TEND
+	;
+
+optional_statements:
+	statement_list
+	|
+	;
+
+statement_list:
+	statement
+	| statement_list TSEMICOLON statement
+	;
+
+statement:
+	variable TSET expression
+	| procedure_statement
+	| compound_statement
+	| TIF expression TTHEN statement TELSE statement
+	| TWHILE expression TDO statement
+	;
+
+variable:
+	TIDENTIFIER
+	| TIDENTIFIER TBRACKETOPEN expression TBRACKETCLOSE
+	;
+
+procedure_statement:
+	TIDENTIFIER
+	| TIDENTIFIER TPARENTHESISOPEN expression_list TPARENTHESISCLOSE
+	;
+
+expression_list:
+	expression
+	| expression_list TCOMMA expression
+	;
+
+expression:
+	simple_expression
+	| simple_expression TREL simple_expression
+	;
+
+simple_expression:
+	term
+	| TADD term
+	| simple_expression TADD term
+	;
+
+term:
+	factor
+	| term TMUL factor
+	;
+
+factor:
+	variable
+	| TIDENTIFIER TPARENTHESISOPEN expression_list TPARENTHESISCLOSE
+	| TNUMBER
+	| TPARENTHESISOPEN expression TPARENTHESISCLOSE
+	| TNOT factor
+	;
+
+%%
+
+int main() {
+	yyparse();
+	printf(PARSER_SUCCESS_MSG);
+	return EXIT_SUCCESS;
+}
+
+void yyerror (const char* msg) {
+	parser_error();
+ }

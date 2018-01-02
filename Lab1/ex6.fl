@@ -193,5 +193,5 @@ void notifyExpression()
 int main(int argc, char *argv[]) {
     yylex();
     if(numbers) { free(numbers); }
-    return 0;
+    return EXIT_SUCCESS;
 }
